@@ -1,23 +1,22 @@
 use config::ConfigError;
 use serde::Deserialize;
-use crate::config::env::require_env_var;
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct AppConfig {
-    pub base_gpt_url: String,
+    pub base_gpt_url: Option<String>,
     pub openai_api_key: String,
-    pub bind_addr: String,
-    pub log_level: String
+    pub bind_addr: Option<String>,
+    pub log_level: Option<String>
 }
 
 
 impl Default for AppConfig {
     fn default() -> Self {
         Self {
-            base_gpt_url: "".to_string(),
+            base_gpt_url: Option::from("".to_string()),
             openai_api_key: "".to_string(),
-            bind_addr: "127.0.0.1:50051".to_string(),
-            log_level: "INFO".to_string(),
+            bind_addr: Option::from("127.0.0.1:50051".to_string()),
+            log_level: Option::from("INFO".to_string()),
         }
     }
 }

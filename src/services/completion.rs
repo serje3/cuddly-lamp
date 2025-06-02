@@ -1,14 +1,15 @@
-use crate::TEXT_GPT_MODEL;
+use std::pin::Pin;
 use crate::client::ClientService;
 use crate::services::base::{OpenAIService, ServiceProperties};
+use crate::TEXT_GPT_MODEL;
 use futures_util::StreamExt;
-use openai_api_rs::v1::api::OpenAIClient;
 use openai_api_rs::v1::chat_completion;
 use openai_api_rs::v1::chat_completion::ChatCompletionRequest;
-use openai_grpc_proto::chat::{CompletionRequest, CompletionResponse};
+use openai_grpc_proto::chat::CompletionResponse;
 use reqwest::{Client, Response};
 use serde_json::json;
 use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
 use tonic::Status;
 pub struct CompletionService {
     props: ServiceProperties,
@@ -66,7 +67,8 @@ impl CompletionService {
         let client = Client::builder().build().expect("No client reqwest");
 
         match self
-            .props.client_service
+            .props
+            .client_service
             .request_authenticate(client.post("https://api.openai.com/v1/chat/completions"))
             .header("Content-Type", "application/json")
             .body(
@@ -87,8 +89,8 @@ impl CompletionService {
         }
     }
 
-    async fn stream_completion<T>(&self, content: &String) -> Result<T, Status> {
-        let res = self.stream_completion_response(content).await?;
+    pub async fn stream_completion(&self, question: &String) -> Result<Pin<Box<ReceiverStream<Result<CompletionResponse, Status>>>>, Status> {
+        let res = self.stream_completion_response(question).await?;
         let mut stream = res.bytes_stream();
 
         let (tx, rx) = mpsc::channel(4);
@@ -104,9 +106,9 @@ impl CompletionService {
                         }
 
                         let parsed: serde_json::Value = serde_json::from_str(json_line).unwrap();
-                        if let Some(content) = parsed["choices"][0]["delta"]["content"].as_str() {
+                        if let Some(answer_delta) = parsed["choices"][0]["delta"]["content"].as_str() {
                             tx.send(Ok(CompletionResponse {
-                                message: content.to_string(),
+                                message: answer_delta.to_string(),
                             }))
                             .await
                             .unwrap();
@@ -116,6 +118,6 @@ impl CompletionService {
             }
         });
 
-        Ok(Box::pin(tokio_stream::wrappers::ReceiverStream::new(rx)))
+        Ok(Box::pin(ReceiverStream::new(rx)))
     }
 }

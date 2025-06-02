@@ -7,5 +7,5 @@ pub struct ServiceProperties {
 }
 
 pub trait OpenAIService {
-    fn properties(&mut self) -> &ServiceProperties;
+    fn properties(&self) -> &ServiceProperties;
 }

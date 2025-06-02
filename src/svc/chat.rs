@@ -23,8 +23,8 @@ impl Chat for ChatService {
 
     async fn completion(
         &self,
-        request: tonic::Request<CompletionRequest>,
-    ) -> Result<tonic::Response<CompletionResponse>, tonic::Status> {
+        request: Request<CompletionRequest>,
+    ) -> Result<Response<CompletionResponse>, Status> {
         let question = request.into_inner().message;
         if question.len() < 3 {
             return Err(Status::invalid_argument("Question too short"));
@@ -32,10 +32,10 @@ impl Chat for ChatService {
 
         let answer = CompletionResponse {
             message: get_completion_service()
-                .completion(&question).to_string(),
+                .completion(&question).await?.to_string(),
         };
 
-        Ok(tonic::Response::new(answer))
+        Ok(Response::new(answer))
     }
 
     type StreamCompletionStream =
@@ -43,20 +43,19 @@ impl Chat for ChatService {
 
     async fn stream_completion(
         &self,
-        request: tonic::Request<CompletionRequest>,
-    ) -> Result<tonic::Response<Self::StreamCompletionStream>, tonic::Status> {
+        request: Request<CompletionRequest>,
+    ) -> Result<Response<Self::StreamCompletionStream>, Status> {
         let question = request.into_inner().message;
         if question.len() < 3 {
-            return Err(tonic::Status::invalid_argument("Question too short"));
+            return Err(Status::invalid_argument("Question too short"));
         }
 
-
-        Ok(tonic::Response::new(get_completion_service().stream_completion_response(&question)))
+        Ok(Response::new(get_completion_service().stream_completion(&question).await?))
     }
 
     /// Server streaming response type for the StreamAssistant method.
     type StreamAssistantStream = Pin<Box<dyn Stream<Item =
-    Result<AssistantResponse, tonic::Status>> + Send + Sync + 'static>>;
+    Result<AssistantResponse, Status>> + Send + Sync + 'static>>;
 
     async fn stream_assistant(&self, request: Request<AssistantRequest>) -> Result<Response<Self::StreamAssistantStream>, Status> {
         todo!()

@@ -1,0 +1,12 @@
+name: cuddly-lamp
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "50051:50051"
+    working_dir: /usr/src/app
+    command: cargo run

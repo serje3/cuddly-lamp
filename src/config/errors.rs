@@ -12,5 +12,5 @@ pub enum ConfigError {
     MissingOAIKey,
 
     #[error("Config parsing error: {0}")]
-    ParseError(#[from] ConfigError),
+    ParseError(#[from] config::ConfigError),
 }

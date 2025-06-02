@@ -2,7 +2,7 @@
 name = "openai-grpc"
 version = "0.1.0"
 authors = ["Sergey Erin <serjerin322@gmail.com>"]
-edition = "2024"
+edition = "2021"
 
 [dependencies]
 openai-grpc-proto = { path = "./rpc"}

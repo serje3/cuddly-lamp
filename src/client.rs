@@ -1,5 +1,5 @@
 use openai_api_rs::v1::api::OpenAIClient;
-use reqwest::{Client, RequestBuilder};
+use reqwest::RequestBuilder;
 use tonic::Status;
 
 pub struct ClientService {
