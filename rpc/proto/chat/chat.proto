@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package chat;
+
+service Chat {
+    rpc Completion(CompletionRequest) returns (CompletionResponse);
+    rpc StreamCompletion(CompletionRequest) returns (stream CompletionResponse);
+    rpc StreamAssistant(AssistantRequest) returns (stream AssistantResponse);
+}
+
+message CompletionRequest {
+  string message = 1;
+}
+
+message CompletionResponse {
+  string message = 1;
+}
+
+message AssistantRequest {
+  string message = 1;
+  optional string thread_id = 2;
+  optional string assistant_id = 3;
+  optional string instructions = 4;
+
+}
+
+message AssistantResponse {
+  string message = 1;
+  string thread_id = 2;
+}
