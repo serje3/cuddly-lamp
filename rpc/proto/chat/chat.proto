@@ -5,6 +5,7 @@ package chat;
 service Chat {
     rpc Completion(CompletionRequest) returns (CompletionResponse);
     rpc StreamCompletion(CompletionRequest) returns (stream CompletionResponse);
+    rpc Assistant(AssistantRequest) returns (AssistantResponse);
     rpc StreamAssistant(AssistantRequest) returns (stream AssistantResponse);
 }
 

@@ -1,3 +1,3 @@
+pub mod assistant;
 pub mod completion;
-mod assistant;
-mod base;
+pub mod base;

@@ -2,14 +2,21 @@ use openai_api_rs::v1::api::OpenAIClient;
 use reqwest::RequestBuilder;
 use tonic::Status;
 
+#[derive(Clone)]
 pub struct ClientService {
-    token: String,
+    pub token: String,
 }
 
 impl ClientService {
     pub fn new() -> Self {
         Self {
             token: std::env::var("OPENAI_API_KEY").expect("No OpenAI_API_KEY env var!"),
+        }
+    }
+
+    pub fn mock() -> Self {
+        Self {
+            token: "test_token".to_string(),
         }
     }
 

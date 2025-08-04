@@ -1,4 +1,3 @@
-use std::pin::Pin;
 use crate::client::ClientService;
 use crate::services::base::{OpenAIService, ServiceProperties};
 use crate::TEXT_GPT_MODEL;
@@ -8,11 +7,13 @@ use openai_api_rs::v1::chat_completion::ChatCompletionRequest;
 use openai_grpc_proto::chat::CompletionResponse;
 use reqwest::{Client, Response};
 use serde_json::json;
+use std::pin::Pin;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 use tonic::Status;
+
 pub struct CompletionService {
-    props: ServiceProperties,
+    pub props: ServiceProperties,
 }
 
 impl OpenAIService for CompletionService {
@@ -24,14 +25,11 @@ impl OpenAIService for CompletionService {
 impl CompletionService {
     pub fn new(client_service: ClientService) -> Self {
         Self {
-            props: ServiceProperties {
-                client: client_service.create().unwrap(),
-                client_service: client_service,
-            },
+            props: ServiceProperties::new(client_service),
         }
     }
 
-    fn create_completion_request(&self, question: &String, stream: bool) -> ChatCompletionRequest {
+    pub fn create_completion_request(&self, question: &String, stream: bool) -> ChatCompletionRequest {
         let req = ChatCompletionRequest::new(
             TEXT_GPT_MODEL.to_string(),
             vec![chat_completion::ChatCompletionMessage {
@@ -89,7 +87,10 @@ impl CompletionService {
         }
     }
 
-    pub async fn stream_completion(&self, question: &String) -> Result<Pin<Box<ReceiverStream<Result<CompletionResponse, Status>>>>, Status> {
+    pub async fn stream_completion(
+        &self,
+        question: &String,
+    ) -> Result<Pin<Box<ReceiverStream<Result<CompletionResponse, Status>>>>, Status> {
         let res = self.stream_completion_response(question).await?;
         let mut stream = res.bytes_stream();
 
@@ -106,7 +107,9 @@ impl CompletionService {
                         }
 
                         let parsed: serde_json::Value = serde_json::from_str(json_line).unwrap();
-                        if let Some(answer_delta) = parsed["choices"][0]["delta"]["content"].as_str() {
+                        if let Some(answer_delta) =
+                            parsed["choices"][0]["delta"]["content"].as_str()
+                        {
                             tx.send(Ok(CompletionResponse {
                                 message: answer_delta.to_string(),
                             }))

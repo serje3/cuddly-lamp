@@ -1,0 +1,3 @@
+// Основной модуль тестов
+pub mod unit;
+pub mod integration; 
